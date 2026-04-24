@@ -148,7 +148,7 @@ function App() {
 
           <button className="reset-button" onClick={handleReset} type="button">
             <RotateCcw aria-hidden="true" size={18} />
-            <span>처음부터 섞기</span>
+            <span>다시 섞기</span>
           </button>
         </section>
 
