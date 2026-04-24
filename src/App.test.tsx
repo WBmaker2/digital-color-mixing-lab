@@ -14,6 +14,9 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: '물감' })).toBeVisible();
     expect(screen.getByRole('button', { name: '빛' })).toBeVisible();
     expect(screen.getByRole('button', { name: '빨강 한 방울 추가' })).toBeVisible();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '현재 결과: 아직 비어 있어요. 총 0방울, 비율: 빨강 0 : 노랑 0 : 파랑 0.'
+    );
     expect(screen.getByLabelText('이 색의 이름이나 느낌')).toBeVisible();
     expect(screen.getByText('따뜻한 주황 만들기')).toBeVisible();
     expect(screen.getByText('풀잎 초록 만들기')).toBeVisible();

@@ -44,6 +44,7 @@ function App() {
 
   const mixed = useMemo(() => mixColor(mode, drops), [mode, drops]);
   const ratioText = useMemo(() => getDominantRatioText(mode, drops), [mode, drops]);
+  const mixStatusText = `현재 결과: ${mixed.name}. 총 ${mixed.totalDrops}방울, 비율: ${ratioText}.`;
   const colorButtons = mode === 'paint' ? PAINT_BUTTONS : LIGHT_BUTTONS;
 
   function handleModeChange(nextMode: ColorMode) {
@@ -119,20 +120,29 @@ function App() {
           <div className="drop-section">
             <h3>{mode === 'paint' ? '물감 방울' : '빛 방울'}</h3>
             <div className="drop-grid">
-              {colorButtons.map((button) => (
-                <button
-                  aria-label={`${button.label} 한 방울 추가`}
-                  className="drop-button"
-                  key={button.key}
-                  onClick={() => handleAddDrop(button.key)}
-                  style={{ '--drop-color': button.swatch } as CSSProperties}
-                  type="button"
-                >
-                  <span className="drop-swatch" aria-hidden="true" />
-                  <span>{button.label}</span>
-                  <strong>{getDropCount(drops, button.key)}</strong>
-                </button>
-              ))}
+              {colorButtons.map((button) => {
+                const count = getDropCount(drops, button.key);
+                const countDescriptionId = `${mode}-${button.key}-drop-count`;
+
+                return (
+                  <button
+                    aria-describedby={countDescriptionId}
+                    aria-label={`${button.label} 한 방울 추가`}
+                    className="drop-button"
+                    key={button.key}
+                    onClick={() => handleAddDrop(button.key)}
+                    style={{ '--drop-color': button.swatch } as CSSProperties}
+                    type="button"
+                  >
+                    <span className="drop-swatch" aria-hidden="true" />
+                    <span>{button.label}</span>
+                    <strong>{count}</strong>
+                    <span className="sr-only" id={countDescriptionId}>
+                      현재 {count}방울
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -154,6 +164,9 @@ function App() {
             role="img"
             style={{ backgroundColor: mixed.hex }}
           />
+          <p aria-atomic="true" aria-live="polite" className="sr-only" role="status">
+            {mixStatusText}
+          </p>
 
           <dl className="result-details">
             <div>
