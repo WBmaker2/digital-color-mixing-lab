@@ -27,8 +27,11 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /노랑 한 방울 추가/ }));
 
     const resultPanel = screen.getByRole('region', { name: '현재 섞인 색' });
-    expect(screen.getAllByText('주황')[0]).toBeVisible();
+    expect(within(resultPanel).getByText('주황')).toBeVisible();
     expect(within(resultPanel).getByText('빨강 1 : 노랑 1 : 파랑 0')).toBeVisible();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '현재 결과: 주황. 총 2방울, 비율: 빨강 1 : 노랑 1 : 파랑 0.'
+    );
   });
 
   it('switches to light mode and shows white light when all light colors are active', async () => {
@@ -42,7 +45,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /파랑빛 한 방울 추가/ }));
 
     const resultPanel = screen.getByRole('region', { name: '현재 섞인 색' });
-    expect(screen.getAllByText('하얀빛')[0]).toBeVisible();
+    expect(within(resultPanel).getByText('하얀빛')).toBeVisible();
     expect(within(resultPanel).getByText('빨강빛 1 : 초록빛 1 : 파랑빛 1')).toBeVisible();
   });
 
