@@ -13,20 +13,22 @@ type Rgb = {
 type PaintDropKey = 'red' | 'yellow' | 'blue';
 type LightDropKey = 'red' | 'green' | 'blue';
 
-export type MixedColor = {
+type ColorInfo = {
   hex: string;
   rgb: Rgb;
   name: string;
   feelingHint: string;
+};
+
+export type MixedColor = ColorInfo & {
   totalDrops: number;
 };
 
-const EMPTY_COLOR: MixedColor = {
+const EMPTY_COLOR: ColorInfo = {
   hex: '#f8fafc',
   rgb: { r: 248, g: 250, b: 252 },
   name: '아직 비어 있어요',
-  feelingHint: '색 물방울을 한 방울씩 더해 보세요.',
-  totalDrops: 0
+  feelingHint: '색 물방울을 한 방울씩 더해 보세요.'
 };
 
 const PAINT_ORDER = ['red', 'yellow', 'blue'] as const satisfies readonly PaintDropKey[];
@@ -79,7 +81,7 @@ const PAINT_SECONDARY = {
   }
 >;
 
-const BROWNISH_PAINT: Omit<MixedColor, 'totalDrops'> = {
+const BROWNISH_PAINT: ColorInfo = {
   hex: '#8b5e34',
   rgb: { r: 139, g: 94, b: 52 },
   name: '갈색에 가까운 혼합색',
@@ -141,14 +143,16 @@ type LightResultKey =
   | 'red+green+blue';
 
 export function createEmptyDrops(mode: ColorMode): DropCounts {
-  return mode === 'paint' ? { red: 0, yellow: 0, blue: 0 } : { red: 0, green: 0, blue: 0 };
+  return mode === 'paint'
+    ? { red: 0, yellow: 0, blue: 0 }
+    : { red: 0, green: 0, blue: 0 };
 }
 
 export function mixColor(mode: ColorMode, drops: DropCounts): MixedColor {
   const totalDrops = getTotalDrops(mode === 'paint' ? PAINT_ORDER : LIGHT_ORDER, drops);
 
   if (totalDrops === 0) {
-    return EMPTY_COLOR;
+    return createResult(EMPTY_COLOR, 0);
   }
 
   return mode === 'paint'
@@ -177,13 +181,15 @@ function mixPaint(activeKeys: PaintDropKey[], drops: DropCounts, totalDrops: num
   if (activeKeys.length === 1) {
     const primary = PAINT_PRIMARY[activeKeys[0]];
 
-    return {
-      hex: rgbToHex(primary.rgb),
-      rgb: primary.rgb,
-      name: primary.name,
-      feelingHint: primary.feelingHint,
+    return createResult(
+      {
+        hex: rgbToHex(primary.rgb),
+        rgb: primary.rgb,
+        name: primary.name,
+        feelingHint: primary.feelingHint
+      },
       totalDrops
-    };
+    );
   }
 
   if (activeKeys.length === 2) {
@@ -192,10 +198,7 @@ function mixPaint(activeKeys: PaintDropKey[], drops: DropCounts, totalDrops: num
     return mixPaintPair(firstKey, secondKey, drops, totalDrops);
   }
 
-  return {
-    ...BROWNISH_PAINT,
-    totalDrops
-  };
+  return createResult(BROWNISH_PAINT, totalDrops);
 }
 
 function mixPaintPair(
@@ -209,13 +212,15 @@ function mixPaintPair(
   const secondCount = getDropCount(drops, secondKey);
 
   if (firstCount === secondCount) {
-    return {
-      hex: rgbToHex(secondary.rgb),
-      rgb: secondary.rgb,
-      name: secondary.name,
-      feelingHint: secondary.feelingHint,
+    return createResult(
+      {
+        hex: rgbToHex(secondary.rgb),
+        rgb: secondary.rgb,
+        name: secondary.name,
+        feelingHint: secondary.feelingHint
+      },
       totalDrops
-    };
+    );
   }
 
   const dominantKey = firstCount > secondCount ? firstKey : secondKey;
@@ -223,26 +228,30 @@ function mixPaintPair(
   const dominance = Math.abs(firstCount - secondCount) / totalDrops;
   const rgb = mixRgb(secondary.rgb, dominant.rgb, Math.min(dominance, 0.65));
 
-  return {
-    hex: rgbToHex(rgb),
-    rgb,
-    name: `${dominant.name}이 더 많은 ${secondary.name}`,
-    feelingHint: secondary.feelingHint,
+  return createResult(
+    {
+      hex: rgbToHex(rgb),
+      rgb,
+      name: `${dominant.name}이 더 많은 ${secondary.name}`,
+      feelingHint: secondary.feelingHint
+    },
     totalDrops
-  };
+  );
 }
 
 function mixLight(activeKeys: LightDropKey[], totalDrops: number): MixedColor {
   const key = getLightResultKey(activeKeys);
   const result = LIGHT_RESULTS[key];
 
-  return {
-    hex: rgbToHex(result.rgb),
-    rgb: result.rgb,
-    name: result.name,
-    feelingHint: result.feelingHint,
+  return createResult(
+    {
+      hex: rgbToHex(result.rgb),
+      rgb: result.rgb,
+      name: result.name,
+      feelingHint: result.feelingHint
+    },
     totalDrops
-  };
+  );
 }
 
 function getActivePaintKeys(drops: DropCounts): PaintDropKey[] {
@@ -258,7 +267,13 @@ function getTotalDrops(order: readonly DropKey[], drops: DropCounts): number {
 }
 
 function getDropCount(drops: DropCounts, key: DropKey): number {
-  return Math.max(0, drops[key] ?? 0);
+  const value = drops[key];
+
+  if (value === undefined || !Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+
+  return Math.floor(value);
 }
 
 function getPaintSecondary(firstKey: PaintDropKey, secondKey: PaintDropKey) {
@@ -318,6 +333,18 @@ function mixRgb(from: Rgb, to: Rgb, amount: number): Rgb {
     g: Math.round(from.g + (to.g - from.g) * amount),
     b: Math.round(from.b + (to.b - from.b) * amount)
   };
+}
+
+function createResult(info: ColorInfo, totalDrops: number): MixedColor {
+  return {
+    ...info,
+    rgb: cloneRgb(info.rgb),
+    totalDrops
+  };
+}
+
+function cloneRgb(rgb: Rgb): Rgb {
+  return { ...rgb };
 }
 
 function rgbToHex(rgb: Rgb): string {
