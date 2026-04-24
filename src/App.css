@@ -392,10 +392,6 @@ code {
     grid-template-columns: 1fr;
   }
 
-  .result-panel {
-    order: -1;
-  }
-
   .drop-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
