@@ -1,6 +1,7 @@
 import { type CSSProperties, useMemo, useState } from 'react';
 import { Droplet, Eraser, Lightbulb, Palette, RotateCcw, Sparkles, Target } from 'lucide-react';
 import { challenges, type Challenge } from './data/challenges';
+import { teacherGuide } from './data/teacherGuide';
 import {
   createEmptyDrops,
   getDominantRatioText,
@@ -41,11 +42,20 @@ function App() {
   const [mode, setMode] = useState<ColorMode>('paint');
   const [drops, setDrops] = useState<DropCounts>(() => createEmptyDrops('paint'));
   const [note, setNote] = useState('');
+  const [activeChallengeId, setActiveChallengeId] = useState<Challenge['id']>('warm-orange');
+  const [observationCard, setObservationCard] = useState('');
 
   const mixed = useMemo(() => mixColor(mode, drops), [mode, drops]);
   const ratioText = useMemo(() => getDominantRatioText(mode, drops), [mode, drops]);
   const mixStatusText = `현재 결과: ${mixed.name}. 총 ${mixed.totalDrops}방울, 비율: ${ratioText}.`;
   const colorButtons = mode === 'paint' ? PAINT_BUTTONS : LIGHT_BUTTONS;
+  const activeChallenge =
+    challenges.find((challenge) => challenge.id === activeChallengeId) ?? challenges[0];
+  const activeChallengeRatioText = getDominantRatioText(
+    activeChallenge.mode,
+    activeChallenge.targetDrops
+  );
+  const missionComplete = mode === activeChallenge.mode && ratioText === activeChallengeRatioText;
 
   function handleModeChange(nextMode: ColorMode) {
     if (nextMode === mode) {
@@ -55,6 +65,7 @@ function App() {
     setMode(nextMode);
     setDrops(createEmptyDrops(nextMode));
     setNote('');
+    setObservationCard('');
   }
 
   function handleAddDrop(key: DropKey) {
@@ -67,15 +78,32 @@ function App() {
   function handleReset() {
     setDrops(createEmptyDrops(mode));
     setNote('');
+    setObservationCard('');
   }
 
   function handleChallengeSelect(challenge: Challenge) {
+    setActiveChallengeId(challenge.id);
     setMode(challenge.mode);
     setDrops({
       ...createEmptyDrops(challenge.mode),
       ...challenge.targetDrops
     });
     setNote('');
+    setObservationCard('');
+  }
+
+  function buildObservationCard() {
+    return [
+      `색 이름: ${mixed.name}`,
+      `색상값: ${mixed.hex}`,
+      `총 방울: ${mixed.totalDrops}방울`,
+      `비율: ${ratioText}`,
+      `내 느낌: ${note.trim() || '아직 기록하지 않았어요.'}`
+    ].join('\n');
+  }
+
+  function handleCreateObservationCard() {
+    setObservationCard(buildObservationCard());
   }
 
   return (
@@ -203,12 +231,28 @@ function App() {
               value={note}
             />
           </div>
+
+          <div className="export-box">
+            <button className="export-button" type="button" onClick={handleCreateObservationCard}>
+              관찰 카드 만들기
+            </button>
+            {observationCard ? (
+              <pre aria-label="관찰 카드" className="observation-card">
+                {observationCard}
+              </pre>
+            ) : null}
+          </div>
         </section>
 
         <section className="panel challenges-panel" aria-labelledby="challenges-title">
           <div className="panel-heading">
             <Target aria-hidden="true" size={20} />
             <h2 id="challenges-title">도전 과제</h2>
+          </div>
+
+          <div className={missionComplete ? 'mission-feedback success' : 'mission-feedback'}>
+            <strong>{missionComplete ? '미션 성공' : '미션 진행 중'}</strong>
+            <p>{missionComplete ? activeChallenge.successMessage : activeChallenge.description}</p>
           </div>
 
           <div className="challenge-list">
@@ -229,6 +273,45 @@ function App() {
           </div>
         </section>
       </div>
+
+      <section className="panel teacher-panel" aria-labelledby="teacher-guide-title">
+        <div className="panel-heading">
+          <Sparkles aria-hidden="true" size={20} />
+          <h2 id="teacher-guide-title">교사용 활용 카드</h2>
+        </div>
+
+        <div className="teacher-grid">
+          <div className="teacher-column">
+            <h3>연계 성취기준</h3>
+            <ul className="standard-list">
+              {teacherGuide.standards.map((standard) => (
+                <li key={standard.code}>
+                  <span className="standard-code">{standard.code}</span>
+                  <span>{standard.description}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="teacher-column">
+            <h3>수업 흐름</h3>
+            <ol className="teacher-steps">
+              {teacherGuide.flow.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="teacher-column">
+            <h3>관찰 발문</h3>
+            <ul className="prompt-list">
+              {teacherGuide.prompts.map((prompt) => (
+                <li key={prompt}>{prompt}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

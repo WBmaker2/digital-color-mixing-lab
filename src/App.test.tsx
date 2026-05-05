@@ -61,4 +61,40 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /다시 섞기/ }));
     expect(note).toHaveValue('');
   });
+
+  it('shows mission feedback when the current mix matches the selected mission', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: /따뜻한 주황 만들기/ }));
+
+    expect(screen.getByText('미션 성공')).toBeVisible();
+    expect(screen.getByText(/빨강과 노랑이 만나 주황이 되었어요/)).toBeVisible();
+  });
+
+  it('generates an observation card text from the current mix and note', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: /빨강 한 방울 추가/ }));
+    await user.click(screen.getByRole('button', { name: /노랑 한 방울 추가/ }));
+    await user.type(screen.getByRole('textbox', { name: /이 색의 이름이나 느낌/ }), '따뜻한 귤색 같아요.');
+    await user.click(screen.getByRole('button', { name: '관찰 카드 만들기' }));
+
+    const observationCard = screen.getByLabelText('관찰 카드');
+    expect(observationCard).toHaveTextContent('색 이름: 주황');
+    expect(observationCard).toHaveTextContent('비율: 빨강 1 : 노랑 1 : 파랑 0');
+    expect(observationCard).toHaveTextContent('내 느낌: 따뜻한 귤색 같아요.');
+  });
+
+  it('shows a teacher guide with standards and lesson prompts', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: '교사용 활용 카드' })).toBeVisible();
+    expect(screen.getByText('[4미01-02]')).toBeVisible();
+    expect(screen.getByText('[6과08-01]')).toBeVisible();
+    expect(screen.getByText(/어떤 색을 더 넣으면 느낌이 달라질까요/)).toBeVisible();
+  });
 });

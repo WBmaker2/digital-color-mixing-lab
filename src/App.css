@@ -333,9 +333,68 @@ code {
   color: #72847d;
 }
 
+.export-box {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.export-button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #2f8b69;
+  border-radius: 8px;
+  background: #e9f6f0;
+  color: #17483b;
+  font-weight: 900;
+}
+
+.export-button:hover {
+  background: #dff1e9;
+}
+
+.observation-card {
+  margin: 12px 0 0;
+  padding: 12px;
+  border: 1px solid #d8eadf;
+  border-radius: 8px;
+  background: #fffef9;
+  color: #183a31;
+  font-family: inherit;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .challenge-list {
   display: grid;
   gap: 10px;
+}
+
+.mission-feedback {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid #c9dfd5;
+  border-radius: 8px;
+  background: #f7fcf9;
+  color: #183a31;
+}
+
+.mission-feedback.success {
+  border-color: #f4c54d;
+  background: #fff8dc;
+}
+
+.mission-feedback strong {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 900;
+}
+
+.mission-feedback p {
+  margin-bottom: 0;
+  color: #526e64;
+  line-height: 1.5;
 }
 
 .challenge-button {
@@ -378,6 +437,69 @@ code {
   line-height: 1.45;
 }
 
+.teacher-panel {
+  width: min(1180px, 100%);
+  margin: 18px auto 0;
+}
+
+.teacher-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.9fr 1fr;
+  gap: 20px;
+}
+
+.teacher-column {
+  padding-top: 12px;
+  border-top: 1px solid #d8eadf;
+}
+
+.teacher-column h3 {
+  margin-bottom: 10px;
+  color: #34564c;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.standard-list,
+.teacher-steps,
+.prompt-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  color: #183a31;
+  line-height: 1.5;
+}
+
+.standard-list,
+.prompt-list {
+  list-style: none;
+}
+
+.standard-list li {
+  display: grid;
+  gap: 5px;
+}
+
+.standard-code {
+  color: #b23b2c;
+  font-weight: 900;
+}
+
+.teacher-steps {
+  padding-left: 1.3rem;
+}
+
+.teacher-steps li::marker {
+  color: #2f8b69;
+  font-weight: 900;
+}
+
+.prompt-list li {
+  padding-left: 12px;
+  border-left: 3px solid #f4c54d;
+}
+
 @media (max-width: 960px) {
   .app {
     padding: 22px;
@@ -394,6 +516,10 @@ code {
 
   .drop-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .teacher-grid {
+    grid-template-columns: 1fr;
   }
 }
 
